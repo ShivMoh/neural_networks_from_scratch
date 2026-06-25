@@ -23,11 +23,15 @@ if __name__ == "__main__":
     labels, images = convert_ds_to_numpy(train_loader)
 
     flatten = Flatten()
-    linear = Linear(784, 10)
-    loss = Cross_Entropy_Loss()
-    softmax = Softmax()
+    linear_1 = Linear(784, 32)
+    linear_2 = Linear(32, 10)
+    relu = ReLU()
     optimizer = SGD(1)
     softmax_loss = Activation_Softmax_Loss_CategoricalCrossEntropy()
+
+    # loss = Cross_Entropy_Loss()
+    # softmax = Softmax()
+    
     losses = []
 
     for label, image in zip(labels, images):
@@ -37,20 +41,26 @@ if __name__ == "__main__":
         
         x = flatten.forward(image)
 
-        x = linear.forward(x)
+        x = linear_1.forward(x)
+        
+        x = relu.forward(x)
+        
         # softmax_output = softmax.forward(x)
         # loss = loss.compute(softmax_output, label)
-        
+        x = linear_2.forward(x)
         activation_loss = softmax_loss.forward(x, label)
         losses.append(activation_loss)
         
         dvalues = softmax_loss.backward(softmax_loss.output, label)
-        dvalues = linear.backward(dvalues)
+        dvalues = linear_2.backward(dvalues)
+        dvalues = relu.backward(dvalues)
+        dvalues = linear_1.backward(dvalues)
 
         # print("before updates", linear.weights)
         # print("before updates", linear.biases)
 
-        optimizer.update_params(linear, 1)
+        optimizer.update_params(linear_1, 1)
+        optimizer.update_params(linear_2, 1)
         
         # print("after updates", linear.weights)
         # print("after updates", linear.biases)
@@ -59,6 +69,8 @@ if __name__ == "__main__":
     
     # plot_loss(losses)    
     
+    # exit()
+
     test_labels, test_images = convert_ds_to_numpy(test_loader)
 
     correct = 0
@@ -67,12 +79,14 @@ if __name__ == "__main__":
 
     for label, image in zip(test_labels, test_images):
         x = flatten.forward(image)
-        x = linear.forward(x)
-        x = softmax.forward(x)
+        x = linear_1.forward(x)
+        x = relu.forward(x)
+        x = linear_2.forward(x)
+        probs = softmax_loss.activation.forward(x)
 
-        predicted = np.argmax(x, axis=1)
+        predicted = np.argmax(probs, axis=1)
 
-        if predicted == label:
+        if predicted[0] == label[0]:
             correct += 1
         total += 1
 
