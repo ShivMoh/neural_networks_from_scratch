@@ -4,6 +4,7 @@ from nn.loss import Cross_Entropy_Loss, Activation_Softmax_Loss_CategoricalCross
 from nn.optimizer import SGD
 from nn.data import convert_ds_to_numpy
 from nn.plot import plot_loss, plot_predictions
+from nn.convolution import Conv2D
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import numpy as np
@@ -22,12 +23,22 @@ if __name__ == "__main__":
 
     labels, images = convert_ds_to_numpy(train_loader)
 
+    print(labels.shape)
+    print(images.shape)
+
+    # labels_c = np.concatenate(labels, axis=0)
+    # images_c = np.concatenate(images, axis=0)
+    
+    # print("images", images_c.shape)
+    # print("labels", labels_c.shape)
+
     flatten = Flatten()
-    linear_1 = Linear(784, 32)
+    linear_1 = Linear(729, 32)
     linear_2 = Linear(32, 10)
     relu = ReLU()
     optimizer = SGD(1)
     softmax_loss = Activation_Softmax_Loss_CategoricalCrossEntropy()
+    conv2d_1 = Conv2D(kernel_size=(2,2))
 
     # loss = Cross_Entropy_Loss()
     # softmax = Softmax()
@@ -37,9 +48,11 @@ if __name__ == "__main__":
     for label, image in zip(labels, images):
         # print("Image", image.shape)
         # print("class label", label)
+        img_2d = image.reshape(28,28)
         
+        x = conv2d_1.forward(img_2d)
         
-        x = flatten.forward(image)
+        x = flatten.forward(x)
 
         x = linear_1.forward(x)
         
