@@ -5,5 +5,6 @@ class SGD():
 
     def update_params(self, layer, lr):
         layer.weights = layer.weights - (lr * layer.dweights)
-        layer.biases = layer.biases - (lr * layer.biases)
-    
+        layer.biases = layer.biases - (lr * layer.dbiases)
+
+        return layer.weights, layer.biases
