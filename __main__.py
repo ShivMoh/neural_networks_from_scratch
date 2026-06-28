@@ -23,9 +23,6 @@ if __name__ == "__main__":
 
     labels, images = convert_ds_to_numpy(train_loader)
 
-    print(labels.shape)
-    print(images.shape)
-
     # labels_c = np.concatenate(labels, axis=0)
     # images_c = np.concatenate(images, axis=0)
     
@@ -48,11 +45,14 @@ if __name__ == "__main__":
     for label, image in zip(labels, images):
         # print("Image", image.shape)
         # print("class label", label)
-        img_2d = image.reshape(28,28)
+        # print(image.shape)
+        transformed_images = []
+        for im in image:
+            img_2d = im.reshape(28,28)
+            x = conv2d_1.forward(img_2d)
+            transformed_images.append(x)
         
-        x = conv2d_1.forward(img_2d)
-        
-        x = flatten.forward(x)
+        x = flatten.forward(np.array(transformed_images))
 
         x = linear_1.forward(x)
         
@@ -68,7 +68,13 @@ if __name__ == "__main__":
         dvalues = linear_2.backward(dvalues)
         dvalues = relu.backward(dvalues)
         dvalues = linear_1.backward(dvalues)
+        dvalues = flatten.backward(dvalues)
 
+        d_conv_outputs = dvalues
+
+        for i, im in enumerate(image):
+            conv2d_1.backward(d_conv_outputs[i])
+            
         # print("before updates", linear.weights)
         # print("before updates", linear.biases)
 
@@ -80,10 +86,8 @@ if __name__ == "__main__":
         
         # dvalues = loss.backward(x, label)
     
-    # plot_loss(losses)    
+    plot_loss(losses)    
     
-    # exit()
-
     test_labels, test_images = convert_ds_to_numpy(test_loader)
 
     correct = 0
@@ -91,7 +95,13 @@ if __name__ == "__main__":
     sample_images, sample_true, sample_pred = [], [], []
 
     for label, image in zip(test_labels, test_images):
-        x = flatten.forward(image)
+        transformed_images = []
+        for im in image:
+            img_2d = im.reshape(28, 28)
+            x = conv2d_1.forward(img_2d)
+            transformed_images.append(x)
+
+        x = flatten.forward(np.array(transformed_images))
         x = linear_1.forward(x)
         x = relu.forward(x)
         x = linear_2.forward(x)

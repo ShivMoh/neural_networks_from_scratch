@@ -5,7 +5,7 @@ def convert_ds_to_numpy(dataset_loader):
         images.append(X.numpy())
         labels.append(y.numpy())
 
-    labels = np.concatenate(labels, axis=0)
-    images = np.concatenate(images, axis=0)
+    # labels = np.concatenate(labels, axis=0)
+    # images = np.concatenate(images, axis=0)
 
     return labels, images

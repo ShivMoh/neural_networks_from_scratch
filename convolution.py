@@ -4,6 +4,7 @@ class Conv2D():
         self.kernel = np.random.randn(kernel_size[0], kernel_size[1])
     
     def forward(self, input):
+        self.input = input
         x_size = self.kernel.shape[0]
         y_size = self.kernel.shape[1]
         
