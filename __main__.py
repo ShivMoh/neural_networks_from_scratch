@@ -21,10 +21,10 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False) # Batch size 1 for prediction
 
-    labels, images = convert_ds_to_numpy(train_loader)
+    labels, images = convert_ds_to_numpy(train_loader, no_batch=False)
 
-    print(labels.shape)
-    print(images.shape)
+    # print(labels.shape)
+    # print(images.shape)
 
     # labels_c = np.concatenate(labels, axis=0)
     # images_c = np.concatenate(images, axis=0)
@@ -40,22 +40,25 @@ if __name__ == "__main__":
     softmax_loss = Activation_Softmax_Loss_CategoricalCrossEntropy()
     conv2d_1 = Conv2D(kernel_size=(2,2))
 
+    print(len(images))
+    print(images[0].shape)
+    # print(labels)
+
     # loss = Cross_Entropy_Loss()
     # softmax = Softmax()
     
     losses = []
 
     for label, image in zip(labels, images):
-        # print("Image", image.shape)
-        # print("class label", label)
-        img_2d = image.reshape(28,28)
-        
-        x = conv2d_1.forward(img_2d)
-        
-        x = flatten.forward(x)
 
-        x = linear_1.forward(x)
+        transformed_images = []
+        for im in image: # image is really a batch of images, too lazy to rename
+            x_single = conv2d_1.forward(im.reshape(28, 28))
+            transformed_images.append(x_single)
         
+        new_array = np.array(transformed_images)
+        x = flatten.forward(new_array)
+        x = linear_1.forward(x)
         x = relu.forward(x)
         
         # softmax_output = softmax.forward(x)
@@ -68,30 +71,50 @@ if __name__ == "__main__":
         dvalues = linear_2.backward(dvalues)
         dvalues = relu.backward(dvalues)
         dvalues = linear_1.backward(dvalues)
+        dvalues = flatten.backward(dvalues)
+        
+        total_d_kernel = np.zeros_like(conv2d_1.kernel)
+        d_conv_outputs = dvalues
+        for i, im in enumerate(image):
+            conv2d_1.input = im.reshape(28, 28)   # reset input for each backward
+            conv2d_1.backward(d_conv_outputs[i])
+            total_d_kernel += conv2d_1.d_kernel
+
+        conv2d_1.kernel -= 1 * total_d_kernel / len(image)  # average over batch
+        
+        
+        
+        
 
         # print("before updates", linear.weights)
         # print("before updates", linear.biases)
 
         optimizer.update_params(linear_1, 1)
-        optimizer.update_params(linear_2, 1)
+        # optimizer.update_params(linear_2, 1e-7)
         
+        print("loss is", activation_loss)
         # print("after updates", linear.weights)
         # print("after updates", linear.biases)
         
         # dvalues = loss.backward(x, label)
     
-    # plot_loss(losses)    
+    plot_loss(losses)    
     
-    # exit()
 
-    test_labels, test_images = convert_ds_to_numpy(test_loader)
+    test_labels, test_images = convert_ds_to_numpy(test_loader, no_batch=False)
 
     correct = 0
     total = 0
     sample_images, sample_true, sample_pred = [], [], []
 
     for label, image in zip(test_labels, test_images):
-        x = flatten.forward(image)
+        transformed_images = []
+        for im in image:
+            x_single = conv2d_1.forward(im.reshape(28, 28))
+            transformed_images.append(x_single)
+
+        new_array = np.array(transformed_images)
+        x = flatten.forward(new_array)
         x = linear_1.forward(x)
         x = relu.forward(x)
         x = linear_2.forward(x)
@@ -99,14 +122,16 @@ if __name__ == "__main__":
 
         predicted = np.argmax(probs, axis=1)
 
-        if predicted[0] == label[0]:
-            correct += 1
-        total += 1
+        correct += np.sum(predicted == label)
+        total += len(label)
 
         if len(sample_images) < 25:
-            sample_images.append(image[0])
-            sample_true.append(int(label[0]))
-            sample_pred.append(int(predicted[0]))
+            for i in range(len(image)):
+                if len(sample_images) >= 25:
+                    break
+                sample_images.append(image[i])
+                sample_true.append(int(label[i]))
+                sample_pred.append(int(predicted[i]))
 
     print(f"Accuracy: {correct}/{total} = {correct/total*100:.2f}%")
     plot_predictions(sample_images, sample_true, sample_pred)

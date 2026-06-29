@@ -20,8 +20,15 @@ class Flatten():
     def forward(self, x):
         self.original_shape = x.shape
         # if x.ndim == 1:
-        return x.reshape(1, -1)  # single sample: (64,) → (1, 64)
+        # return x.reshape(1, -1)  # single sample: (64,) → (1, 64)
         # return x.reshape(x.shape[0], -1)  # batch: (N, H, W) → (N, H*W)
+        return x.reshape(x.shape[0], -1)
+        # return x.reshape(1, -1)
+        if x.ndim == 1:
+            print("are we running this?")
+            return x.reshape(1, -1)  # single sample: (64,) → (1, 64)
+        return x.reshape(x.shape[0], -1)  # batch: (N, H, W) → (N, H*W)
 
     def backward(self, grad):
         return grad.reshape(self.original_shape)
+
