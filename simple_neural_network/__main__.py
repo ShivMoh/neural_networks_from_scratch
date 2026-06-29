@@ -1,10 +1,10 @@
-from nn.nn import Linear, Flatten
-from nn.activation import ReLU, Softmax
-from nn.loss import Cross_Entropy_Loss, Activation_Softmax_Loss_CategoricalCrossEntropy
-from nn.optimizer import SGD
-from nn.data import convert_ds_to_numpy
-from nn.plot import plot_loss, plot_predictions
-from nn.convolution import Conv2D
+from simple_neural_network.nn import Linear, Flatten
+from simple_neural_network.activation import ReLU, Softmax
+from simple_neural_network.loss import Cross_Entropy_Loss, Activation_Softmax_Loss_CategoricalCrossEntropy
+from simple_neural_network.optimizer import SGD
+from simple_neural_network.data import convert_ds_to_numpy
+from simple_neural_network.plot import plot_loss, plot_predictions
+from simple_neural_network.convolution import Conv2D
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import numpy as np

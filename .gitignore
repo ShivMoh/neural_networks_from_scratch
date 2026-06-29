@@ -1,3 +1,5 @@
 MNIST_CSV.zip
 MNIST_CSV
 __pycache__
+.win-venv
+.venv
