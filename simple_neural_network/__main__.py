@@ -81,10 +81,6 @@ if __name__ == "__main__":
         optimizer.update_params(linear_1, 1)
         optimizer.update_params(linear_2, 1)
         
-        # print("after updates", linear.weights)
-        # print("after updates", linear.biases)
-        
-        # dvalues = loss.backward(x, label)
     
     plot_loss(losses)    
     
